@@ -1,17 +1,16 @@
 package controllers;
 
-import java.io.IOException;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.impl.XMLResponseParser;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocumentList;
-import utils.Config;
 
-public final class SolrController {
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-  private static HttpSolrClient connection;
+public class SolrController {
+
+  private static Connection connection;
 
   public SolrController() {
     connection = getConnection();
@@ -22,56 +21,39 @@ public final class SolrController {
    *
    * @return a Connection object
    */
-  public static HttpSolrClient getConnection() {
+  public static Connection getConnection() {
 
-    // Build a URL string with settings from config
-    String urlString =
-        "http://"
-            + Config.getSolrHost()
-            + ":"
-            + Config.getSolrPort()
-            + "/"
-            + Config.getSolrPath()
-            + "/"
-            + Config.getSolrCore();
+    String urlString = "http://localhost:8983/solr/bigboxstore";
 
-    // Connect to SolR
     HttpSolrClient solr = new HttpSolrClient.Builder(urlString).build();
+
     solr.setParser(new XMLResponseParser());
 
-    return solr;
+    return connection;
   }
 
   /**
-   * Do a query in SolR
+   * Do a query in the database
    *
    * @return a ResultSet or Null if Empty
    */
-  public static SolrDocumentList search(String field, String value) {
+  public ResultSet query(String sql) {
 
-    if(connection == null)
+    if (connection == null) {
       connection = getConnection();
-
-    // Search in Solr base on Field and Value
-    SolrQuery query = new SolrQuery();
-    query.set("q", field + ":" + value);
-
-    // Create an empty document list
-    SolrDocumentList docList = new SolrDocumentList();
-
-    try {
-      // Search in Solr
-      QueryResponse response = connection.query(query);
-
-      // Get the results
-      docList = response.getResults();
-
-    } catch (SolrServerException e) {
-      System.out.println(e.getMessage());
-    } catch (IOException e) {
-      e.printStackTrace();
     }
 
-    return docList;
+    ResultSet rs = null;
+
+    try {
+      PreparedStatement stmt = connection.prepareStatement(sql);
+      rs = stmt.executeQuery();
+
+      return rs;
+    } catch (SQLException e) {
+      System.out.println(e.getMessage());
+    }
+
+    return rs;
   }
 }
