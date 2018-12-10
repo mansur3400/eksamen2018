@@ -2,10 +2,10 @@ package model;
 
 public class User {
 
-  public int id;
-  public String firstname;
-  public String lastname;
-  public String email;
+  private int id;
+  private String firstname;
+  private String lastname;
+  private String email;
   private String password;
   private long createdTime;
 
