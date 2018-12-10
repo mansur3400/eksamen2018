@@ -10,7 +10,7 @@ public class Product {
   private int stock;
   private long createdTime;
 
-  public Product(){};
+  public Product() {};
 
   public Product(int id, String name, String sku, float price, String description, int stock) {
     this.id = id;
